@@ -1,14 +1,13 @@
 using UnityEngine;
 
-namespace RowSpanTable.v2
+namespace RowSpanTable
 {
-
-    public class Cell_v2 : MonoBehaviour
+    public class Cell : MonoBehaviour
     {
-        [SerializeField]
+        [SerializeField] 
         private int colSpan = 1;
 
-        [SerializeField]
+        [SerializeField] 
         private int rowSpan = 1;
 
         public int ColSpan => Mathf.Max(1, colSpan);
