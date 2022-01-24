@@ -4,10 +4,10 @@ namespace RowSpanTable
 {
     public class Cell : MonoBehaviour
     {
-        [SerializeField] 
+        [SerializeField]
         private int colSpan = 1;
 
-        [SerializeField] 
+        [SerializeField]
         private int rowSpan = 1;
 
         public int ColSpan => Mathf.Max(1, colSpan);

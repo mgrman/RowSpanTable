@@ -17,6 +17,8 @@ namespace RowSpanTable
         [SerializeField]
         private float[] columnWidths;
 
+        private DrivenRectTransformTracker tracker;
+
         public int ColCount { get; private set; }
 
         public int RowCount { get; private set; }
@@ -32,6 +34,19 @@ namespace RowSpanTable
             base.Awake();
 
             Initialize();
+        }
+
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+            SetDirty();
+        }
+
+        protected override void OnDisable()
+        {
+            tracker.Clear();
+            LayoutRebuilder.MarkLayoutForRebuild(rectTransform);
+            base.OnDisable();
         }
 
         public void Initialize()
@@ -78,7 +93,10 @@ namespace RowSpanTable
                     RowCount = Math.Max(RowCount, rowIndex + cell.RowSpan);
                     ColCount = Math.Max(ColCount, columnIndex + cell.ColSpan);
 
-                    for (var iy = 0; iy < cell.RowSpan; iy++) perRowOffsets[rowIndex + iy] += cell.ColSpan;
+                    for (var iy = 0; iy < cell.RowSpan; iy++)
+                    {
+                        perRowOffsets[rowIndex + iy] += cell.ColSpan;
+                    }
                 }
 
                 rowIndex++;
@@ -91,12 +109,18 @@ namespace RowSpanTable
             foreach (Transform rowTransform in transform)
             {
                 var row = rowTransform.GetComponent<Row>();
-                if (row == null) continue;
+                if (row == null)
+                {
+                    continue;
+                }
 
                 foreach (Transform cellTransform in rowTransform)
                 {
                     var cell = cellTransform.GetComponent<Cell>();
-                    if (cell == null) continue;
+                    if (cell == null)
+                    {
+                        continue;
+                    }
 
                     var columnIndex = perRowOffsets[rowIndex]; // TODO needs to be offseted by possible rowspan cells
 
@@ -104,12 +128,17 @@ namespace RowSpanTable
                         cell.GetComponent<RectTransform>());
 
                     for (var ix = 0; ix < cell.ColSpan; ix++)
+                    {
+                        for (var iy = 0; iy < cell.RowSpan; iy++)
+                        {
+                            Cells[columnIndex + ix, rowIndex + iy] = cellData;
+                        }
+                    }
+
                     for (var iy = 0; iy < cell.RowSpan; iy++)
-                        Cells[columnIndex + ix, rowIndex + iy] = cellData;
-
-                    for (var iy = 0; iy < cell.RowSpan; iy++) perRowOffsets[rowIndex + iy] += cell.ColSpan;
-
-                    columnIndex++;
+                    {
+                        perRowOffsets[rowIndex + iy] += cell.ColSpan;
+                    }
                 }
 
                 rowIndex++;
@@ -148,20 +177,26 @@ namespace RowSpanTable
             for (var ix = 0; ix < ColCount; ix++)
             {
                 var cell = Cells[ix, row];
-                if (cell == null || previousCell == cell) continue;
+                if (cell == null || previousCell == cell)
+                {
+                    continue;
+                }
 
                 yield return cell;
                 previousCell = cell;
             }
         }
 
-        public IEnumerable<CellData> GetCellsForColumn(int col)
+        private IEnumerable<CellData> GetCellsForColumn(int col)
         {
             CellData previousCell = null;
             for (var iy = 0; iy < RowCount; iy++)
             {
                 var cell = Cells[col, iy];
-                if (cell == null || previousCell == cell) continue;
+                if (cell == null || previousCell == cell)
+                {
+                    continue;
+                }
 
                 yield return cell;
                 previousCell = cell;
@@ -174,6 +209,7 @@ namespace RowSpanTable
         /// </summary>
         public override void SetLayoutHorizontal()
         {
+            m_Tracker.Clear();
             Initialize();
             UpdateColumnWidths();
 
@@ -181,7 +217,10 @@ namespace RowSpanTable
             foreach (Transform rowTransform in transform)
             {
                 var row = rowTransform.GetComponent<Row>();
-                if (row == null) continue;
+                if (row == null)
+                {
+                    continue;
+                }
 
                 var rowRectTransform = rowTransform.GetComponent<RectTransform>();
                 SetChildAlongAxis(rowRectTransform, 0, 0, widthsSum);
@@ -202,7 +241,10 @@ namespace RowSpanTable
             foreach (Transform rowTransform in transform)
             {
                 var row = rowTransform.GetComponent<Row>();
-                if (row == null) continue;
+                if (row == null)
+                {
+                    continue;
+                }
 
                 var rowHeight = RowHeights[rowIndex];
 
@@ -213,6 +255,9 @@ namespace RowSpanTable
                 y += rowHeight;
                 rowIndex++;
             }
+
+            m_Tracker.Add(this, rectTransform, DrivenTransformProperties.SizeDeltaY);
+            rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, RowHeights.Sum());
         }
 
         private void UpdateColumnWidths()
@@ -235,7 +280,10 @@ namespace RowSpanTable
             {
                 var scaleFactor = rectTransform.rect.width / ColumnWidths.Sum();
 
-                for (var ix = 0; ix < ColCount; ix++) ColumnWidths[ix] *= scaleFactor;
+                for (var ix = 0; ix < ColCount; ix++)
+                {
+                    ColumnWidths[ix] *= scaleFactor;
+                }
             }
         }
 

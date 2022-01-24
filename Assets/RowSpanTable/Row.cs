@@ -8,7 +8,7 @@ namespace RowSpanTable
     public class Row : LayoutGroup
     {
         private int rowIndex;
-        
+
         private Table table;
 
         protected override void Awake()
@@ -26,7 +26,10 @@ namespace RowSpanTable
             foreach (Transform rowTransform in transform.parent)
             {
                 var row = rowTransform.GetComponent<Row>();
-                if (row == this) break;
+                if (row == this)
+                {
+                    break;
+                }
 
                 rowIndex++;
             }
@@ -81,7 +84,10 @@ namespace RowSpanTable
             Initialize();
             foreach (var cell in table.GetCellsForRow(rowIndex))
             {
-                if (cell.rectTransform.parent != transform) continue;
+                if (cell.rectTransform.parent != transform)
+                {
+                    continue;
+                }
 
                 var x = Enumerable.Range(0, cell.col)
                     .Select(r => table.ColumnWidths[r])
@@ -104,7 +110,10 @@ namespace RowSpanTable
 
             foreach (var cell in table.GetCellsForRow(rowIndex))
             {
-                if (cell.rectTransform.parent != transform) continue;
+                if (cell.rectTransform.parent != transform)
+                {
+                    continue;
+                }
 
                 var y = 0;
                 var rowHeight = Enumerable.Range(cell.row, cell.rowSpan)
